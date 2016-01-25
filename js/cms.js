@@ -116,7 +116,6 @@ var CMS = {
     if (map[type]) {
       map[type]();
     } else {
-      // Error view
       var errorMsg = 'Error loading page.';
       CMS.renderError(errorMsg);
     }
@@ -184,7 +183,7 @@ var CMS = {
   },
 
   renderFooter: function () {
-    // Delay footer loading while waiting on ajax requests
+    // Load footer later so things dont look weird loading ajax stuff
     setTimeout(function () {
       CMS.settings.footerContainer.fadeIn(CMS.settings.fadeSpeed);
     }, 800);
@@ -241,20 +240,18 @@ var CMS = {
       }
     });
 
-    // Drop data we don't need
+    // Drop stuff we dont need
     data.splice(0,2);
 
     // Put everything back together if broken
     var contentData = data.join();
     contentObj.contentData = marked(contentData);
 
-    switch(type) {
-      case 'post':
-        CMS.posts.push(contentObj);
-        break;
-      case 'page':
-        CMS.pages.push(contentObj);
-        break;
+
+    if (type == 'post') {
+      CMS.posts.push(contentObj);
+    } else if (type == 'page') {
+      CMS.pages.push(contentObj);
     }
 
     // Execute after all content is loaded
@@ -386,26 +383,25 @@ var CMS = {
 
   setNavigation: function () {
 
-    var navBuilder = ['<ul>'];
+    var nav = '<ul>';
     CMS.settings.siteNavItems.forEach(function (navItem) {
       if (navItem.hasOwnProperty('href')) {
-        navBuilder.push('<li><a href="', navItem.href, '"');
+        nav += '<li><a href="' +  navItem.href + '"';
         if (navItem.hasOwnProperty('newWindow')) {
           if (navItem.newWindow) {
-            navBuilder.push('target="_blank"');
+            nav += 'target="_blank"';
           }
         }
-        navBuilder.push('>', navItem.name, '</a></li>');
+        nav += '>' + navItem.name + '</a></li>';
       } else {
         CMS.pages.forEach(function (page) {
           if (navItem.name == page.title) {
-            navBuilder.push('<li><a href="#" class="cms_nav_link" id="', navItem.name, '">', navItem.name, '</a></li>');
+            nav += '<li><a href="#" class="cms_nav_link" id="' + navItem.name + '">' + navItem.name + '</a></li>';
           }
         });
       }
     });
-    navBuilder.push('</ul>');
-    var nav = navBuilder.join('');
+    nav += '</ul>';
 
     $('.cms_nav').html(nav).hide().fadeIn(CMS.settings.fadeSpeed);
 
